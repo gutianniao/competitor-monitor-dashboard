@@ -1,0 +1,221 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "sqlite"
+  url = env("DATABASE_URL")
+}
+
+enum CompetitorGroup {
+  leather
+  latex
+}
+enum ChangeType {
+  NEW_PRODUCT
+  PRICE_CHANGE
+  NEW_PAGE
+}
+
+model Competitor {
+  id Int @id @default(autoincrement())
+  name String
+  group CompetitorGroup
+  url String
+  country String
+  socials Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  snapshots Snapshot[]
+  changes Change[]
+  socialSnapshots SocialSnapshot[]
+  trafficSnapshots TrafficSnapshot[]
+  techSnapshots TechSnapshot[]
+  ads AdSnapshot[]
+  backlinkSnapshots BacklinkSnapshot[]
+  seoReports SeoReport[]
+  keywordSnapshots KeywordSnapshot[]
+  schemaSnapshots SchemaSnapshot[]
+  @@unique([name, url])
+}
+
+model Snapshot {
+  id Int @id @default(autoincrement())
+  competitorId Int
+  pageType String
+  url String
+  title String?
+  contentHash String?
+  skuCount Int @default(0)
+  priceMin Float?
+  priceMax Float?
+  capturedAt DateTime @default(now())
+  competitor Competitor @relation(fields:[competitorId], references:[id], onDelete: Cascade)
+  @@index([competitorId, capturedAt])
+}
+
+model Change {
+  id Int @id @default(autoincrement())
+  competitorId Int
+  type ChangeType
+  url String
+  title String?
+  imageUrl String?
+  skuCount Int @default(0)
+  price Float?
+  detectedAt DateTime @default(now())
+  competitor Competitor @relation(fields:[competitorId], references:[id], onDelete: Cascade)
+  @@index([detectedAt])
+}
+
+model SocialSnapshot {
+  id Int @id @default(autoincrement())
+  competitorId Int
+  platform String
+  followers Int?
+  totalViews Int?
+  recentVideos Int?
+  title String?
+  status String @default("ok")
+  capturedAt DateTime @default(now())
+  competitor Competitor @relation(fields:[competitorId], references:[id], onDelete: Cascade)
+  @@index([competitorId, platform, capturedAt])
+}
+
+model TrafficSnapshot {
+  id Int @id @default(autoincrement())
+  competitorId Int
+  month String
+  visits Int
+  countries Json
+  channels Json
+  socialSources Json
+  demo Boolean @default(false)
+  source String @default("dataforseo")
+  capturedAt DateTime @default(now())
+  competitor Competitor @relation(fields:[competitorId], references:[id], onDelete: Cascade)
+  @@unique([competitorId, month, source])
+}
+
+model TechSnapshot {
+  id Int @id @default(autoincrement())
+  competitorId Int
+  technologies Json
+  capturedAt DateTime @default(now())
+  competitor Competitor @relation(fields:[competitorId], references:[id], onDelete: Cascade)
+}
+
+model AdSnapshot {
+  id Int @id @default(autoincrement())
+  competitorId Int
+  activeCount Int?
+  copySummary String?
+  platforms Json
+  status String @default("ok")
+  capturedAt DateTime @default(now())
+  competitor Competitor @relation(fields:[competitorId], references:[id], onDelete: Cascade)
+}
+
+model BacklinkSnapshot {
+  id Int @id @default(autoincrement())
+  competitorId Int
+  month String
+  totalBacklinks Int
+  referringDomains Int
+  referringIps Int?
+  dofollowRatio Float?
+  rank Float?
+  qualityBreakdown Json
+  topReferrers Json
+  topAnchors Json
+  demo Boolean @default(false)
+  source String @default("dataforseo")
+  error String?
+  capturedAt DateTime @default(now())
+  competitor Competitor @relation(fields:[competitorId], references:[id], onDelete: Cascade)
+  @@unique([competitorId, month, source])
+  @@index([competitorId, capturedAt])
+}
+
+model SeoReport {
+  id Int @id @default(autoincrement())
+  competitorId Int
+  score Int
+  dimensions Json
+  strengths Json
+  issues Json
+  pages Json
+  error String?
+  capturedAt DateTime @default(now())
+  competitor Competitor @relation(fields:[competitorId], references:[id], onDelete: Cascade)
+  @@index([competitorId, capturedAt])
+}
+
+model KeywordSnapshot {
+  id Int @id @default(autoincrement())
+  competitorId Int
+  keyword String
+  searchVolume Int?
+  position Float?
+  rankedUrl String?
+  etv Float?
+  cpc Float?
+  trafficShare Float?
+  type String @default("organic")
+  source String @default("dataforseo")
+  market String
+  isOpportunity Boolean @default(false)
+  opportunityGroup String?
+  capturedAt DateTime @default(now())
+  competitor Competitor @relation(fields:[competitorId], references:[id], onDelete: Cascade)
+  @@index([competitorId, capturedAt])
+  @@index([market, capturedAt])
+}
+
+model SchemaSnapshot {
+  id Int @id @default(autoincrement())
+  competitorId Int
+  pageType String
+  url String
+  schemaTypes Json
+  productSchemaDetail Json
+  capturedAt DateTime @default(now())
+  competitor Competitor @relation(fields:[competitorId], references:[id], onDelete: Cascade)
+  @@index([competitorId, pageType, capturedAt])
+}
+
+model OutreachProspect {
+  id Int @id @default(autoincrement())
+  domain String @unique
+  urlFrom String?
+  anchor String?
+  rank Float?
+  dofollow Boolean @default(false)
+  competitors Json
+  keywords Json
+  qualityScore Int
+  tier String
+  suggestedType String?
+  excludeReason String?
+  status String @default("new")
+  statusHistory Json @default("[]")
+  rawJson Json?
+  firstSeen DateTime @default(now())
+  capturedAt DateTime @default(now())
+  sheetsSyncAt DateTime?
+  sheetsSyncRows Int?
+  sheetsSyncError String?
+  links OutreachLink[]
+  @@index([qualityScore])
+  @@index([status])
+}
+
+model OutreachLink {
+  id Int @id @default(autoincrement())
+  prospectId Int
+  pageUrl String
+  alive Boolean @default(true)
+  lastCheckedAt DateTime?
+  note String?
+  prospect OutreachProspect @relation(fields:[prospectId], references:[id], onDelete: Cascade)
+  @@index([prospectId, alive])
+}

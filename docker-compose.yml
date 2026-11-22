@@ -1,0 +1,14 @@
+services:
+  monitor:
+    build: .
+    ports:
+      - "127.0.0.1:4000:4000"
+    env_file: .env
+    environment:
+      DATABASE_URL: file:/app/data/dev.db
+      PORT: 4000
+    volumes:
+      - monitor-data:/app/data
+
+volumes:
+  monitor-data:

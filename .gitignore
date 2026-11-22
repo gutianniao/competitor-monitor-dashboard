@@ -1,0 +1,17 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env*
+!.env.example
+competitors.json
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+.cookies.json
+*.log
+*.err
+.bak_*/
+/ego-*-stockings-*.mjs
